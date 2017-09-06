@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapterViewHolder> {
-
+    /* TAG is used to output the log event */
     private String TAG = ForecastAdapter.class.getSimpleName();
 
     private String[] mWeatherData;

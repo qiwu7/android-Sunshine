@@ -20,6 +20,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,13 +36,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.sunshine.data.SunshinePreferences;
+import com.example.android.sunshine.utilities.ForecastTaskLoader;
 import com.example.android.sunshine.utilities.NetworkUtils;
 import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
 
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements ForecastAdapter.ForecastAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity
+        implements ForecastAdapter.ForecastAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<String[]> {
 
+    /***************************************
+     * Member fields                      *
+     ***************************************/
     private String TAG = MainActivity.class.getSimpleName();
 
     private RecyclerView mRecyclerView;
@@ -50,6 +59,11 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
 
     private ProgressBar mLoadingIndicator;
 
+    private static final int FORECAST_LOADER_ID = 0;
+
+    /***************************************
+     * Member methods                      *
+     ***************************************/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +72,11 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_forecast);
         /* This TextView is used to display errors and will be hidden if there are no errors */
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+        /*
+         * The ProgressBar that will indicate to the user that we are loading data. It will be
+         * hidden when no data is loading.
+         */
+        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         // Create layoutManager, a LinearLayoutManager with VERTICAL orientation and shouldReverseLayout == false
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -71,28 +90,16 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
         mForecastAdapter = new ForecastAdapter(this);
         // Use mRecyclerView.setAdapter and pass in mForecastAdapter
         mRecyclerView.setAdapter(mForecastAdapter);
+
         /*
-         * The ProgressBar that will indicate to the user that we are loading data. It will be
-         * hidden when no data is loading.
-         *
-         * Please note: This so called "ProgressBar" isn't a bar by default. It is more of a
-         * circle. We didn't make the rules (or the names of Views), we just follow them.
+         * Ensures a loader is initialized and active. If the loader doesn't already exist, one is
+         * created and (if the activity/fragment is currently started) starts the loader. Otherwise
+         * the last created loader is re-used.
          */
-        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-
-        /* Once all of our views are setup, we can load the weather data. */
-        loadWeatherData();
-    }
-
-    /**
-     * This method will get the user's preferred location for weather, and then tell some
-     * background method to get the weather data in the background.
-     */
-    private void loadWeatherData() {
-        showWeatherDataView();
-
-        String location = SunshinePreferences.getPreferredWeatherLocation(this);
-        new FetchWeatherTask().execute(location);
+        int loaderId = FORECAST_LOADER_ID;
+        Bundle bundleForLoader = null;
+        LoaderManager.LoaderCallbacks<String[]> callback = MainActivity.this;
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
     }
 
     /**
@@ -109,32 +116,6 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
         mRecyclerView.setVisibility(View.VISIBLE);
     }
 
-        /**
-          * This method uses the URI scheme for showing a location found on a
-          * map. This super-handy intent is detailed in the "Common Intents"
-          * page of Android's developer site:
-          *
-          * @see <a"http://developer.android.com/guide/components/intents-common.html#Maps">
-          *
-          * Hint: Hold Command on Mac or Control on Windows and click that link
-          * to automagically open the Common Intents page
-          */
-        private void openLocationInMap() {
-            String addressString = "1600 Ampitheatre Parkway, CA";
-            Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
-
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(geoLocation);
-
-            if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
-            } else {
-                Log.d(TAG, "Couldn't call " + geoLocation.toString()
-                        + ", no receiving apps installed!");
-            }
-        }
-
-
     /**
      * This method will make the error message visible and hide the weather
      * View.
@@ -149,6 +130,39 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * This method uses the URI scheme for showing a location found on a
+     * map. This super-handy intent is detailed in the "Common Intents"
+     * page of Android's developer site:
+     * @see <a"http://developer.android.com/guide/components/intents-common.html#Maps">
+     */
+    private void openLocationInMap() {
+        String addressString = "1600 Ampitheatre Parkway, CA";
+        Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(TAG, "Couldn't call " + geoLocation.toString()
+                    + ", no receiving apps installed!");
+        }
+    }
+
+    /**
+     * This method is used when we are resetting data, so that at one point in time during a
+     * refresh of our data, you can see that there is no data showing.
+     */
+    private void invalidateData() {
+        mForecastAdapter.setWeatherData(null);
+    }
+
+    /**
+     *
+     * @param weatherForDay
+     */
     @Override
     public void onClick(String weatherForDay) {
         Context context = this;
@@ -157,58 +171,27 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
         intent.putExtra(Intent.EXTRA_TEXT, weatherForDay);
 
         startActivity(intent);
-
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+    @Override
+    public Loader<String[]> onCreateLoader(int id, Bundle args) {
+        return new ForecastTaskLoader(this, mLoadingIndicator);
+    }
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        mForecastAdapter.setWeatherData(data);
+        if (data != null) {
+            showWeatherDataView();
+        } else {
+            showErrorMessage();
         }
+    }
 
-        @Override
-        protected String[] doInBackground(String... params) {
-
-            /* If there's no zip code, there's nothing to look up. */
-            if (params.length == 0) {
-                return null;
-            }
-
-            String location = params[0];
-            URL weatherRequestUrl = NetworkUtils.buildUrl(location);
-
-            try {
-                String jsonWeatherResponse = NetworkUtils
-                        .getResponseFromHttpUrl(weatherRequestUrl);
-
-                String[] simpleJsonWeatherData = OpenWeatherJsonUtils
-                        .getSimpleWeatherStringsFromJson(MainActivity.this, jsonWeatherResponse);
-
-                return simpleJsonWeatherData;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String[] weatherData) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (weatherData != null) {
-                showWeatherDataView();
-                /*
-                 * Iterate through the array and append the Strings to the TextView. The reason why we add
-                 * the "\n\n\n" after the String is to give visual separation between each String in the
-                 * TextView. Later, we'll learn about a better way to display lists of data.
-                 */
-                mForecastAdapter.setWeatherData(weatherData);
-            } else {
-                showErrorMessage();
-            }
-        }
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+        //Not implemented
     }
 
     @Override
@@ -226,8 +209,8 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.F
         int id = item.getItemId();
         switch (id) {
             case R.id.action_refresh:
-                mForecastAdapter.setWeatherData(null);
-                loadWeatherData();
+                invalidateData();
+                getSupportLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
                 return true;
             case R.id.action_map:
                 openLocationInMap();
