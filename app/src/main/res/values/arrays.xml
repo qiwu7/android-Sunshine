@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="pref_unit_keys">
+        <item>@string/pref_unit_celsius_key</item>
+        <item>@string/pref_unit_fahrenheit_key</item>
+    </array>
+
+    <array name="pref_unit_values">
+        <item>@string/pref_unit_celsius_value</item>
+        <item>@string/pref_unit_fahrenheit_value</item>
+    </array>
+</resources>

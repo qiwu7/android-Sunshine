@@ -44,13 +44,20 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_share) {
-            Intent shareIntent = ShareCompat.IntentBuilder.from(this)
-                    .setType("text/plain")
-                    .setText(mForecast + FORECAST_SHARE_HASHTAG)
-                    .getIntent();
-            startActivity(shareIntent);
+        switch (id) {
+            case R.id.action_settings:
+                Intent settingsActivity = new Intent(this, SettingsActivity.class);
+                startActivity(settingsActivity);
+                return true;
+            case R.id.action_share:
+                Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                        .setType("text/plain")
+                        .setText(mForecast + FORECAST_SHARE_HASHTAG)
+                        .getIntent();
+                startActivity(shareIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 }

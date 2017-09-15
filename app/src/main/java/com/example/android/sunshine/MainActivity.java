@@ -17,13 +17,14 @@ package com.example.android.sunshine;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
+import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -33,18 +34,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.utilities.ForecastTaskLoader;
-import com.example.android.sunshine.utilities.NetworkUtils;
-import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
-
-import java.net.URL;
 
 public class MainActivity extends AppCompatActivity
         implements ForecastAdapter.ForecastAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<String[]> {
+        LoaderManager.LoaderCallbacks<String[]>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     /***************************************
      * Member fields                      *
@@ -60,6 +57,9 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar mLoadingIndicator;
 
     private static final int FORECAST_LOADER_ID = 0;
+    //Add a private static boolean flag for preference updates and initialize it to false
+    private boolean preferencesHaveBeenUpdated;
+
 
     /***************************************
      * Member methods                      *
@@ -100,63 +100,33 @@ public class MainActivity extends AppCompatActivity
         Bundle bundleForLoader = null;
         LoaderManager.LoaderCallbacks<String[]> callback = MainActivity.this;
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+
+        /*
+         * Register MainActivity as an OnPreferenceChangedListener to receive a callback when a
+         * SharedPreference has changed.
+         */
+        PreferenceManager.getDefaultSharedPreferences(this).
+                registerOnSharedPreferenceChangeListener(this);
+
+        preferencesHaveBeenUpdated = false;
     }
 
-    /**
-     * This method will make the View for the weather data visible and
-     * hide the error message.
-     * <p>
-     * Since it is okay to redundantly set the visibility of a View, we don't
-     * need to check whether each view is currently visible or invisible.
-     */
-    private void showWeatherDataView() {
-        /* First, make sure the error is invisible */
-        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        /* Then, make sure the weather data is visible */
-        mRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * This method will make the error message visible and hide the weather
-     * View.
-     * <p>
-     * Since it is okay to redundantly set the visibility of a View, we don't
-     * need to check whether each view is currently visible or invisible.
-     */
-    private void showErrorMessage() {
-        /* First, hide the currently visible data */
-        mRecyclerView.setVisibility(View.INVISIBLE);
-        /* Then, show the error */
-        mErrorMessageDisplay.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * This method uses the URI scheme for showing a location found on a
-     * map. This super-handy intent is detailed in the "Common Intents"
-     * page of Android's developer site:
-     * @see <a"http://developer.android.com/guide/components/intents-common.html#Maps">
-     */
-    private void openLocationInMap() {
-        String addressString = "1600 Ampitheatre Parkway, CA";
-        Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
-
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(geoLocation);
-
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        } else {
-            Log.d(TAG, "Couldn't call " + geoLocation.toString()
-                    + ", no receiving apps installed!");
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (this.preferencesHaveBeenUpdated) {
+            Log.d(TAG, "onStart: preferences were updated");
+            getSupportLoaderManager().restartLoader(this.FORECAST_LOADER_ID, null, this);
+            this.preferencesHaveBeenUpdated = false;
         }
     }
 
-    /**
-     * This method is used when we are resetting data, so that at one point in time during a
-     * refresh of our data, you can see that there is no data showing.
-     */
-    private void invalidateData() {
-        mForecastAdapter.setWeatherData(null);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        /* Unregister MainActivity as an OnPreferenceChangedListener to avoid any memory leaks. */
+        PreferenceManager.getDefaultSharedPreferences(this).
+                unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -215,8 +185,77 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_map:
                 openLocationInMap();
                 return true;
+            case R.id.action_settings:
+                Intent settingsActivity = new Intent(this, SettingsActivity.class);
+                startActivity(settingsActivity);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        this.preferencesHaveBeenUpdated = false;
+    }
+
+
+
+    /**
+     * This method will make the View for the weather data visible and
+     * hide the error message.
+     * <p>
+     * Since it is okay to redundantly set the visibility of a View, we don't
+     * need to check whether each view is currently visible or invisible.
+     */
+    private void showWeatherDataView() {
+        /* First, make sure the error is invisible */
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        /* Then, make sure the weather data is visible */
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * This method will make the error message visible and hide the weather
+     * View.
+     * <p>
+     * Since it is okay to redundantly set the visibility of a View, we don't
+     * need to check whether each view is currently visible or invisible.
+     */
+    private void showErrorMessage() {
+        /* First, hide the currently visible data */
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        /* Then, show the error */
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * This method uses the URI scheme for showing a location found on a
+     * map. This super-handy intent is detailed in the "Common Intents"
+     * page of Android's developer site:
+     * @see <a"http://developer.android.com/guide/components/intents-common.html#Maps">
+     */
+    private void openLocationInMap() {
+        String addressString = SunshinePreferences.getPreferredWeatherLocation(this);
+        Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(TAG, "Couldn't call " + geoLocation.toString()
+                    + ", no receiving apps installed!");
+        }
+    }
+
+    /**
+     * This method is used when we are resetting data, so that at one point in time during a
+     * refresh of our data, you can see that there is no data showing.
+     */
+    private void invalidateData() {
+        mForecastAdapter.setWeatherData(null);
+    }
+
 }
