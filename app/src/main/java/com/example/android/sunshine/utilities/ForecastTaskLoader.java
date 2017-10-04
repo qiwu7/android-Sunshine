@@ -11,10 +11,6 @@ import com.example.android.sunshine.data.SunshinePreferences;
 
 import java.net.URL;
 
-/**
- * Created by mscec on 2017/9/5.
- */
-
 public class ForecastTaskLoader extends AsyncTaskLoader<String[]> {
 
     private ProgressBar mLoadingIndicator;
@@ -39,21 +35,17 @@ public class ForecastTaskLoader extends AsyncTaskLoader<String[]> {
 
     @Override
     public String[] loadInBackground() {
-        String location = SunshinePreferences.getPreferredWeatherLocation(getContext());
-        if (location != null && !location.isEmpty()) {
-            URL weatherRequestUrl = NetworkUtils.buildUrl(location);
-            try {
-                String jsonWeatherResponse = NetworkUtils
-                        .getResponseFromHttpUrl(weatherRequestUrl);
-                String[] simpleJsonWeatherData = OpenWeatherJsonUtils
-                        .getSimpleWeatherStringsFromJson(getContext(), jsonWeatherResponse);
-                return simpleJsonWeatherData;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
+        URL weatherRequestUrl = NetworkUtils.getUrl(getContext());
+        try {
+            String jsonWeatherResponse = NetworkUtils
+                    .getResponseFromHttpUrl(weatherRequestUrl);
+            String[] simpleJsonWeatherData = OpenWeatherJsonUtils
+                    .getSimpleWeatherStringsFromJson(getContext(), jsonWeatherResponse);
+            return simpleJsonWeatherData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public void deliverResult(String[] data) {

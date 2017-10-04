@@ -63,6 +63,13 @@
     <string name="pref_unit_fahrenheit_value">Degree Fahrenheit</string>
 
 
+    <!-- - - - - - - - - - - - - - - -->
+    <!-- Used by WeatherProvider-->
+    <!-- - - - - - - - - - - - - - - -->
+
+    <string name="content_authority">com.example.android.sunshine</string>
+
+
     <!-- - - - - - - - - - - - - -->
     <!--Used by SunshineDateUtils-->
     <!-- - - - - - - - - - - - - -->
@@ -93,6 +100,12 @@
         <xliff:g id="temp">%1.0f</xliff:g>\u00B0F
     </string>
 
+    <!-- Temperature format -->
+    <string name="format_temperature">
+        <xliff:g id="temp">%1.0f</xliff:g>\u00B0
+    </string>
+
+    <string name="wind_label">Wind</string>
     <!-- Wind in kph [CHAR LIMIT=25] -->
     <string name="format_wind_kmh">
         <xliff:g id="speed">%1$1.0f</xliff:g> km/h <xliff:g id="direction">%2$s</xliff:g>
@@ -101,6 +114,20 @@
     <!-- Wind in mph [CHAR LIMIT=25] -->
     <string name="format_wind_mph">
         <xliff:g id="speed">%1$1.0f</xliff:g> mph <xliff:g id="direction">%2$s</xliff:g>
+    </string>
+
+
+
+    <string name="pressure_label">Pressure</string>
+    <!-- Pressure format -->
+    <string name="format_pressure">
+        <xliff:g id="pressure">%1.0f</xliff:g> hPa
+    </string>
+
+    <string name="humidity_label">Humidity</string>
+    <!-- Humidity format -->
+    <string name="format_humidity">
+        <xliff:g id="humidity">%1.0f</xliff:g> %%
     </string>
 
     <!-- Weather Conditions (From OpenWeatherMap) -->

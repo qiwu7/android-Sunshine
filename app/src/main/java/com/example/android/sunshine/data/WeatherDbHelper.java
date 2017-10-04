@@ -15,7 +15,7 @@ public class WeatherDbHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String SQL_CREATE_WEATHER_TABLE  = "CREATE TABLE IF NOT EXIST " + WeatherContract.WeatherEntry.TABLE_NAME + " ("
+        final String SQL_CREATE_WEATHER_TABLE  = "CREATE TABLE IF NOT EXISTS " + WeatherContract.WeatherEntry.TABLE_NAME + " ("
                 + WeatherContract.WeatherEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + WeatherContract.WeatherEntry.COLUMN_DATE + " INTEGER NOT NULL, "
                 + WeatherContract.WeatherEntry.COLUMN_WEATHER_ID + " INTEGER NOT NULL, "
@@ -33,7 +33,7 @@ public class WeatherDbHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXIST " + WeatherContract.WeatherEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + WeatherContract.WeatherEntry.TABLE_NAME);
         onCreate(db);
     }
 }
