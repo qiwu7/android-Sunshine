@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <!-- COMPLETED (10) Add a boolean value for showing notifications by default to res/bools.xml -->
+    <bool name="show_notifications_by_default">true</bool>
+</resources>

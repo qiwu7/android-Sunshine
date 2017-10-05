@@ -164,11 +164,12 @@ public class WeatherProvider extends ContentProvider {
         SQLiteDatabase db = mWeatherDbHelper.getWritableDatabase();
         int match = mUriMatcher.match(uri);
         int numRows;
+
         switch (match) {
             case CODE_WEATHER_WITH_DATE:
                 String id = uri.getLastPathSegment();
                 String[] mSelectionArgs = new String[]{id};
-                String mSelection = "id=?";
+                String mSelection = WeatherContract.WeatherEntry.COLUMN_DATE + "=?";
                 numRows = db.delete(WeatherContract.WeatherEntry.TABLE_NAME,
                         mSelection,
                         mSelectionArgs);
@@ -177,6 +178,7 @@ public class WeatherProvider extends ContentProvider {
                 numRows = db.delete(WeatherContract.WeatherEntry.TABLE_NAME,
                         selection,
                         selectionArgs);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }

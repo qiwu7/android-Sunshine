@@ -20,6 +20,7 @@ import android.widget.ProgressBar;
 
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherContract;
+import com.example.android.sunshine.sync.SunshineSyncUtils;
 import com.example.android.sunshine.utilities.FakeDataUtils;
 
 public class MainActivity extends AppCompatActivity
@@ -78,8 +79,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_forecast);
         getSupportActionBar().setElevation(0f);
 
-        FakeDataUtils.insertFakeData(this);
-
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_forecast);
         /* This TextView is used to display errors and will be hidden if there are no errors */
 //        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
@@ -113,6 +112,8 @@ public class MainActivity extends AppCompatActivity
         Bundle bundleForLoader = null;
         LoaderManager.LoaderCallbacks<Cursor> callback = MainActivity.this;
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+
+        SunshineSyncUtils.initialize(this);
     }
 
     /**

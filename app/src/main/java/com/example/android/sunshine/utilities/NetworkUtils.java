@@ -39,7 +39,12 @@ public final class NetworkUtils {
     private static final String STATIC_WEATHER_URL =
             "https://andfun-weather.udacity.com/staticweather";
 
-    private static final String FORECAST_BASE_URL = STATIC_WEATHER_URL;
+    private static final String OPEN_WEATHER_MAP_URL =
+            "https://api.openweathermap.org/data/2.5/forecast";
+
+    private static final String FORECAST_BASE_URL = OPEN_WEATHER_MAP_URL;
+
+
 
     /*
      * NOTE: These values only effect responses from OpenWeatherMap, NOT from the fake weather
@@ -68,6 +73,8 @@ public final class NetworkUtils {
     /* The days parameter allows us to designate how many days of weather data we want */
     private static final String DAYS_PARAM = "cnt";
 
+
+    private static final String API_KEY = "9ec2406364e56aa9b0c52c1d5f5265ec";
     /**
      * Retrieves the proper URL to query for the weather data. The reason for both this method as
      * well as {@link #buildUrlWithLocationQuery(String)} is two fold.
@@ -90,7 +97,11 @@ public final class NetworkUtils {
             return buildUrlWithLatitudeLongitude(latitude, longitude);
         } else {
             String locationQuery = SunshinePreferences.getPreferredWeatherLocation(context);
-            return buildUrlWithLocationQuery(locationQuery);
+            double[] preferredCoordinates = GetGeoLocation.getLocationCoordinates(locationQuery);
+            double latitude = preferredCoordinates[0];
+            double longitude = preferredCoordinates[1];
+            Log.v(TAG, ""+latitude);
+            return buildUrlWithLatitudeLongitude(latitude, longitude);
         }
     }
 
@@ -108,7 +119,8 @@ public final class NetworkUtils {
                 .appendQueryParameter(LON_PARAM, String.valueOf(longitude))
                 .appendQueryParameter(FORMAT_PARAM, format)
                 .appendQueryParameter(UNITS_PARAM, units)
-                .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+//                .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                .appendQueryParameter("appid",API_KEY)
                 .build();
 
         try {
