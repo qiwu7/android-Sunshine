@@ -44,8 +44,7 @@ public class NotificationUtils {
      * can be handy when we need to cancel the notification, or perhaps update it. This number is
      * arbitrary and can be set to whatever you like. 3004 is in no way significant.
      */
-//  COMPLETED (1) Create a constant int value to identify the notification
-    private static final int WEATHER_NOTIFICATION_ID = 2017;
+    private static final int WEATHER_NOTIFICATION_ID = 3004;
 
     /**
      * Constructs and displays a notification for the newly updated weather for today.

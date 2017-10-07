@@ -44,7 +44,7 @@ public final class SunshineWeatherUtils {
             temperature = celsiusToFahrenheit(temperature);
         }
 
-        int temperatureFormatResourceId = R.string.format_temperature_celsius;
+        int temperatureFormatResourceId = R.string.format_temperature;
 
         /* For presentation, assume the user doesn't care about tenths of a degree. */
         return String.format(context.getString(temperatureFormatResourceId), temperature);

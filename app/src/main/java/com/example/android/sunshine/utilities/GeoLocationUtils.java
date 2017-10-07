@@ -1,9 +1,7 @@
 package com.example.android.sunshine.utilities;
 
 import android.net.Uri;
-import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,11 +9,17 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class GetGeoLocation {
+public class GeoLocationUtils {
     private static final String GOOGLE_MAP_BASE_URL =
             "https://maps.googleapis.com/maps/api/geocode/json?address=";
-    private static final String TAG = GetGeoLocation.class.getSimpleName();
+    private static final String TAG = GeoLocationUtils.class.getSimpleName();
 
+    /**
+     * Given an address as String, using google map api, return the geo location
+     * as an array of length 2, which includes latitude and longitude
+     * @param address
+     * @return
+     */
     public static double[] getLocationCoordinates(String address) {
         Uri uri = Uri.parse(GOOGLE_MAP_BASE_URL + address).buildUpon().build();
         double[] locations = new double[2];
