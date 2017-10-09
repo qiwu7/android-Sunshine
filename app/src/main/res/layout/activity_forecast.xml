@@ -37,14 +37,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="8dp"/>
-
+        android:paddingBottom="@dimen/activity_forecast_recycler_view_bot_padding"/>
 
     <!-- A progress bar that will be shown to users to indicate that weather data is loading -->
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
+        android:layout_width="@dimen/activity_forecast_process_bar_size"
+        android:layout_height="@dimen/activity_forecast_process_bar_size"
         android:layout_gravity="center"
         android:visibility="invisible" />
 
