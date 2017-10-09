@@ -65,11 +65,10 @@
 
         <TextView
             android:id="@+id/low_temperature"
-            android:layout_width="60dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
             android:textColor="@color/secondary_text"
-            android:gravity="end"
             android:textSize="36sp"
             app:layout_constraintRight_toRightOf="@+id/high_temperature"
             app:layout_constraintLeft_toLeftOf="@+id/high_temperature"
