@@ -1,7 +1,8 @@
 Sunshine App
 ===================================
+This app displays up-to-date weather forecasts in 2 weeks, and also allows users to set personal perferences, including location and unit.
 
-This app displays the weather forecasts in the next 2 weeks.
+![Image showing Sunshine App](app/src/public/images/app.png)
 
 Pre-requisites
 --------------
